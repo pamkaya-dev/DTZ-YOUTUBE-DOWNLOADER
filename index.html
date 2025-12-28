@@ -27,7 +27,7 @@ body {
 }
 
 /* ===== Bubble Background ===== */
-.bubble-bg {
+.bubble-bg{
   position:fixed;
   inset:0;
   overflow:hidden;
@@ -35,29 +35,27 @@ body {
   pointer-events:none;
 }
 
-.bubble {
+.bubble{
   position:absolute;
-  bottom:-100px; /* start below screen */
+  bottom:-20px;
+  width:80px;
+  height:88px;
+  background:#00f2ff;
   border-radius:50%;
-  background:#ff0000;
-  opacity:0.6;
+  opacity:6;
   animation:floatUp linear infinite;
 }
 
-@keyframes floatUp {
-  0% {
-    transform: translateY(0) scale(0.5);
-    opacity:0.6;
+@keyframes floatUp{
+  0%{
+    transform:translateY(0) scale(.5);
+    opacity:2;
   }
-  50% {
-    opacity:0.8;
-  }
-  100% {
-    transform: translateY(-120vh) scale(1);
+  100%{
+    transform:translateY(-150vh) scale(1);
     opacity:0;
   }
 }
-
 /* ===== Container ===== */
 .container {
   max-width:700px;
@@ -182,11 +180,9 @@ button:hover {
 <body>
 
 <!-- Bubble background -->
-<div class="bubble-bg">
-  <div class="bubble" style="left:10%; width:60px; height:60px; animation-duration:12s;"></div>
-  <div class="bubble" style="left:50%; width:80px; height:80px; animation-duration:15s;"></div>
-  <div class="bubble" style="left:80%; width:50px; height:50px; animation-duration:10s;"></div>
-</div>
+<div class="bubble-bg"></div>
+<div class="background-circle c1"></div>
+<div class="background-circle c2"></div>
 
 <div class="container">
 
