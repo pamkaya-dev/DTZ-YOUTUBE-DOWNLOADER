@@ -26,7 +26,7 @@ body {
   position:relative;
 }
 /* ===== Bubble Background ===== */
-.bubble-bg{
+..bubble-bg {
   position:fixed;
   inset:0;
   overflow:hidden;
@@ -34,24 +34,25 @@ body {
   pointer-events:none;
 }
 
-.bubble{
+.bubble {
   position:absolute;
-  bottom:-20px;
-  width:80px;
-  height:88px;
-  background:#ff0000;
+  bottom:0;
   border-radius:50%;
+  background:#ff0000;
   opacity:0.6;
-  animation:floatUp linear infinite;
+  animation:floatUp linear forwards;
 }
 
-@keyframes floatUp{
-  0%{
-    transform:translateY(0) scale(.5);
-    opacity:2;
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) scale(0.5);
+    opacity:0.6;
   }
-  100%{
-    transform:translateY(-150vh) scale(1);
+  50% {
+    opacity:0.8;
+  }
+  100% {
+    transform: translateY(-150vh) scale(1);
     opacity:0;
   }
 }
