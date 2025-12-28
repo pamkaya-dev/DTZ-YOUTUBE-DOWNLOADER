@@ -1,60 +1,72 @@
 async function fetchVideo() {
-  const yt = document.getElementById("yturl").value;
-  if (!yt) return alert("Paste YouTube link");
+  const yt = document.getElementById("yturl").value.trim();
+  const status = document.getElementById("status");
 
-  document.getElementById("title").innerText = "Loading...";
   document.getElementById("videoList").innerHTML = "";
   document.getElementById("audioList").innerHTML = "";
+  document.getElementById("title").innerText = "";
 
-  const API = `https://api.bk9.dev/download/youtube?url==${encodeURIComponent(yt)}`;
+  if (!yt) {
+    status.innerText = "❌ Paste a YouTube link";
+    return;
+  }
+
+  status.innerText = "⏳ Fetching qualities...";
+
+  const API = `https://api.bk9.dev/download/yt?url=${encodeURIComponent(yt)}`;
 
   try {
     const res = await fetch(API);
-    const json = await res.json();
+    if (!res.ok) throw new Error("API error");
 
-    if (!json.status) {
-      document.getElementById("title").innerText = "Error";
-      return;
-    }
+    const json = await res.json();
+    if (!json.status) throw new Error("Invalid response");
 
     const data = json.BK9;
     const formats = data.formats;
 
     document.getElementById("title").innerText = data.title;
+    status.innerText = "✅ Select quality to download";
 
     /* VIDEO */
-    formats
-      .filter(f => f.type === "video")
-      .forEach(v => {
-        const btn = document.createElement("button");
-        btn.className = "download-btn";
-        btn.innerText = `${v.quality} | ${v.fps}fps | ${v.bitrate}`;
-        btn.onclick = () => forceDownload(v.url, "video.mp4");
-        document.getElementById("videoList").appendChild(btn);
-      });
+    const videos = formats.filter(f => f.type === "video");
+    document.getElementById("videoList").innerHTML =
+      videos.map(v => `
+        <div class="download-btn"
+          onclick="forceDownload('${v.url}','${cleanName(data.title)}_${v.quality}.mp4')">
+          ${v.quality} | ${v.fps || ""}fps | ${v.bitrate || ""}
+        </div>
+      `).join("");
 
     /* AUDIO */
-    formats
-      .filter(f => f.type !== "video")
-      .forEach(a => {
-        const btn = document.createElement("button");
-        btn.className = "download-btn";
-        btn.innerText = `Audio | ${a.bitrate || "unknown"}`;
-        btn.onclick = () => forceDownload(a.url, "audio.mp3");
-        document.getElementById("audioList").appendChild(btn);
-      });
+    const audios = formats.filter(f => f.type !== "video");
+    document.getElementById("audioList").innerHTML =
+      audios.length
+        ? audios.map(a => `
+            <div class="download-btn"
+              onclick="forceDownload('${a.url}','${cleanName(data.title)}.mp3')">
+              Audio | ${a.bitrate || "Unknown"}
+            </div>
+          `).join("")
+        : "<p>No audio formats</p>";
 
   } catch (e) {
-    document.getElementById("title").innerText = "Failed";
+    console.error(e);
+    status.innerText = "❌ Error loading qualities";
   }
 }
 
-/* 🔥 FORCE DOWNLOAD FUNCTION */
+/* 🔽 FORCE DOWNLOAD (NO PLAY, NO NEW PAGE) */
 function forceDownload(url, filename) {
   const a = document.createElement("a");
   a.href = url;
-  a.setAttribute("download", filename);
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
+}
+
+/* File name clean */
+function cleanName(name) {
+  return name.replace(/[^\w\s]/gi, "").replace(/\s+/g, "_");
 }
