@@ -26,14 +26,6 @@ body {
   position:relative;
 }
 /* ===== Bubble Background ===== */
-.bubble-bg {
-  position:fixed;
-  inset:0;
-  overflow:hidden;
-  z-index:0;
-  pointer-events:none;
-}
-
 .bubble {
   position:absolute;
   bottom:0;
@@ -46,7 +38,7 @@ body {
 @keyframes floatUp {
   0% {
     transform: translateY(0) scale(0.5);
-    opacity:0.6;
+    opacity:0.3;
   }
   50% {
     opacity:0.8;
@@ -213,8 +205,8 @@ function createBubble() {
   const bubble = document.createElement('div');
   bubble.classList.add('bubble');
 
-  // Random size 5px – 12px
-  const size = Math.random() *12;
+  // Random size 4px – 12px
+  const size = Math.random() * 8 + 4;
   bubble.style.width = size + 'px';
   bubble.style.height = size + 'px';
 
@@ -222,18 +214,18 @@ function createBubble() {
   bubble.style.left = Math.random() * 100 + '%';
 
   // Random animation duration (fast bubbles)
-  bubble.style.animationDuration = (Math.random() * 2+ 2) + 's';
+  bubble.style.animationDuration = (Math.random() * 1 + 1) + 's';
 
   bubbleBg.appendChild(bubble);
 
   // Remove bubble after animation
   setTimeout(() => {
     bubble.remove();
-  }, 3000); // slightly longer than max animation duration
+  }, 2500); // slightly longer than max animation duration
 }
 
-// Create many bubbles continuously
-setInterval(createBubble, 34); // every 0.1s a new bubble
+// Create dense bubbles continuously
+setInterval(createBubble, 20); // every 0.02s → very dense
 async function fetchVideo() {
   const yt = document.getElementById("yturl").value;
   if (!yt) return alert("Paste YouTube link");
