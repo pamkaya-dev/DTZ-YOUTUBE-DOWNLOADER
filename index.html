@@ -185,6 +185,7 @@ button:hover {
 </div>
 
 <script>
+// Bubbles
 function createBubble() {
   const bubble = document.createElement('div');
   bubble.classList.add('bubble');
@@ -224,34 +225,31 @@ async function fetchVideo() {
 
     document.getElementById("title").innerText = data.title || "Unknown Title";
 
-    // Thumbnail fix (supports .jpg or .webp → hqdefault)
+    // Thumbnail fix
     const thumbImg = document.getElementById("thumbnail");
     if (data.thumbnail) {
-      let thumbBase = data.thumbnail.split("?")[0];
-      let ext = thumbBase.match(/\.(jpg|webp)\( /i) ? thumbBase.match(/\.(jpg|webp) \)/i)[1] : "jpg";
-      let thumbUrl = thumbBase.replace(/default\.(jpg|webp)/i, `hqdefault.${ext}`);
+      // default.webp → hqdefault.jpg
+      let thumbUrl = data.thumbnail.replace("default.webp", "hqdefault.jpg");
       thumbImg.src = thumbUrl;
       thumbImg.style.display = "block";
     }
 
-    // Super clean filename (no spaces, no bad chars, short)
-    const safeTitle = (data.title || "video")
-      .replace(/[^a-zA-Z0-9]/g, '_')  // only letters/numbers/underscore
-      .substring(0, 30);  // short to avoid issues
+    // Safe title for filename
+    const safeTitle = (data.title || "video").replace(/[/\\?%*:|"<>]/g, '-').replace(/\s+/g, '_').substring(0, 100);
 
-    // VIDEO
+    // VIDEO (has_video: true)
     const videos = formats.filter(f => f.has_video === true);
     document.getElementById("videoList").innerHTML = videos.length
       ? videos.map(v => {
-          const q = v.quality || "Unknown";
-          const codec = v.type ? v.type : "";
-          const fps = v.fps ? `${v.fps}fps` : "";
-          const br = v.bitrate ? `${v.bitrate}kbps` : "";
-          const label = `${q} ${codec} ${fps} ${br}`.trim();
+          const q = v.quality || "";
+          const type = v.type ? `(${v.type})` : "";
+          const fps = v.fps ? `| ${v.fps}fps` : "";
+          const br = v.bitrate ? `| ${v.bitrate}` : "";
+          const label = `${q} ${type} ${fps} ${br}`.trim();
 
-          const mime = v.mime || v.mime_type || "";
-          const ext = mime.includes("webm") ? "webm" : "mp4";
-          const filename = `\( {safeTitle}_ \){q}p.${ext}`;
+          const isWebm = v.mime_type && v.mime_type.includes("webm");
+          const ext = isWebm ? "webm" : "mp4";
+          const filename = `\( {safeTitle}_ \){q.replace(/\s+/g, '')}.${ext}`;
 
           return `<a class="download-btn" href="\( {v.url}" download=" \){filename}" target="_blank">
                     ${label}
@@ -259,15 +257,15 @@ async function fetchVideo() {
         }).join("")
       : "<p>No video formats</p>";
 
-    // AUDIO
-    const audios = formats.filter(f => f.has_video !== true);
+    // AUDIO (has_video !== true, but has_audio true)
+    const audios = formats.filter(f => f.has_video !== true && f.has_audio === true);
     document.getElementById("audioList").innerHTML = audios.length
       ? audios.map(a => {
-          const br = a.bitrate ? `${a.bitrate}kbps` : "";
+          const br = a.bitrate ? `| ${a.bitrate}` : "";
           const label = `Audio ${br}`.trim();
 
-          const mime = a.mime || a.mime_type || "";
-          const ext = mime.includes("webm") ? "webm" : "m4a";
+          const isWebm = a.mime_type && a.mime_type.includes("webm");
+          const ext = isWebm ? "webm" : "m4a";
           const filename = `\( {safeTitle}_audio. \){ext}`;
 
           return `<a class="download-btn" href="\( {a.url}" download=" \){filename}" target="_blank">
