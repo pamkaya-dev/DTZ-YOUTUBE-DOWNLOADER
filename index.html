@@ -24,7 +24,7 @@ body {
   align-items:center;
   color:#e5e7eb;
   position:relative;
-  overflow:hidden; /* bubbles එළියට යන්න ඉඩ නැති කරනවා */
+  /* overflow:hidden; ← මේක remove කළා scroll එක fix කරන්න */
 }
 
 /* ===== Bubble Background ===== */
@@ -58,7 +58,7 @@ body {
   padding:20px;
   text-align:center;
   position:relative;
-  z-index:10; /* bubbles ඉහළින් */
+  z-index:10;
 }
 
 /* ===== Heading ===== */
@@ -182,7 +182,6 @@ button:hover {
 </head>
 <body>
 
-<!-- Bubbles directly on body -->
 <div class="container">
   <h1>🎬 DTZ YT DOWNLOADER</h1>
 
@@ -206,7 +205,7 @@ button:hover {
 </div>
 
 <script>
-// Create bubbles
+// Bubbles
 function createBubble() {
   const bubble = document.createElement('div');
   bubble.classList.add('bubble');
@@ -215,7 +214,7 @@ function createBubble() {
   bubble.style.width = size + 'px';
   bubble.style.height = size + 'px';
   bubble.style.left = Math.random() * 100 + '%';
-  bubble.style.animationDuration = (Math.random() * 3 + 3) + 's'; // 3-6s
+  bubble.style.animationDuration = (Math.random() * 3 + 3) + 's';
 
   document.body.appendChild(bubble);
 
@@ -224,31 +223,7 @@ function createBubble() {
   }, 7000);
 }
 
-setInterval(createBubble, 50); // dense but smooth
-
-// Manual download function
-async function downloadFile(url, filename) {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error("Failed");
-
-    const blob = await response.blob();
-    const blobUrl = window.URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = filename;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(blobUrl);
-  } catch (e) {
-    alert("Download failed! Opening in new tab...");
-    window.open(url, '_blank');
-  }
-}
+setInterval(createBubble, 50);
 
 // Main function
 async function fetchVideo() {
@@ -267,7 +242,7 @@ async function fetchVideo() {
     const json = await res.json();
 
     if (!json.status || !json.BK9) {
-      document.getElementById("title").innerText = "API Error or Invalid Link";
+      document.getElementById("title").innerText = "Invalid link or API error";
       return;
     }
 
@@ -279,45 +254,46 @@ async function fetchVideo() {
     // Thumbnail
     const thumbImg = document.getElementById("thumbnail");
     if (data.thumbnail) {
-      let thumbUrl = data.thumbnail.split("?")[0].replace("default.jpg", "hqdefault.jpg");
+      let thumbUrl = data.thumbnail.split("?")[0].replace(/default\.webp|default\.jpg/, "hqdefault.jpg");
       thumbImg.src = thumbUrl;
       thumbImg.style.display = "block";
     }
 
+    // Safe title for filename
+    const safeTitle = (data.title || "video").replace(/[/\\?%*:|"<>]/g, '-');
+
     // VIDEO
-    const videos = formats.filter(f => f.type === "video" || f.has_video === true);
+    const videos = formats.filter(f => f.has_video === true || f.type === "video");
     document.getElementById("videoList").innerHTML = videos.length
       ? videos.map(v => {
           const q = v.quality || "Unknown";
           const fps = v.fps ? `| ${v.fps}fps` : "";
           const br = v.bitrate ? `| ${v.bitrate}` : "";
-          const ext = v.mime?.includes("webm") ? "webm" : "mp4";
-          const safeTitle = (data.title || "video").replace(/[/\\?%*:|"<>]/g, '-');
+          const ext = v.mime_type?.includes("webm") ? "webm" : "mp4";
           const filename = `${safeTitle} - \( {q} \){fps}\( {br}. \){ext}`;
 
-          return `<a class="download-btn" href="javascript:void(0)" onclick="downloadFile('\( {v.url}', ' \){filename}')">
+          return `<a class="download-btn" href="\( {v.url}" download=" \){filename}" target="_blank">
                     ${q} ${fps} ${br}
                   </a>`;
         }).join("")
       : "<p>No video formats</p>";
 
     // AUDIO
-    const audios = formats.filter(f => f.type !== "video" && f.has_video !== true);
+    const audios = formats.filter(f => f.has_video !== true && f.has_audio === true);
     document.getElementById("audioList").innerHTML = audios.length
       ? audios.map(a => {
           const br = a.bitrate ? `| ${a.bitrate}` : "";
-          const ext = a.mime?.includes("webm") ? "webm" : "m4a";
-          const safeTitle = (data.title || "audio").replace(/[/\\?%*:|"<>]/g, '-');
+          const ext = a.mime_type?.includes("webm") ? "webm" : "m4a";
           const filename = `\( {safeTitle} - Audio \){br}.${ext}`;
 
-          return `<a class="download-btn" href="javascript:void(0)" onclick="downloadFile('\( {a.url}', ' \){filename}')">
+          return `<a class="download-btn" href="\( {a.url}" download=" \){filename}" target="_blank">
                     Audio ${br}
                   </a>`;
         }).join("")
       : "<p>No audio formats</p>";
 
   } catch (e) {
-    document.getElementById("title").innerText = "Error – Check console (F12)";
+    document.getElementById("title").innerText = "Error – Check internet or link";
     console.error(e);
   }
 }
