@@ -224,28 +224,34 @@ async function fetchVideo() {
 
     document.getElementById("title").innerText = data.title || "Unknown Title";
 
-    // Thumbnail (hqdefault for better quality)
+    // Thumbnail fix (supports .jpg or .webp → hqdefault)
     const thumbImg = document.getElementById("thumbnail");
     if (data.thumbnail) {
-      let thumbUrl = data.thumbnail.split("?")[0].replace(/default\.(jpg|webp)/, "hqdefault.jpg");
+      let thumbBase = data.thumbnail.split("?")[0];
+      let ext = thumbBase.match(/\.(jpg|webp)\( /i) ? thumbBase.match(/\.(jpg|webp) \)/i)[1] : "jpg";
+      let thumbUrl = thumbBase.replace(/default\.(jpg|webp)/i, `hqdefault.${ext}`);
       thumbImg.src = thumbUrl;
       thumbImg.style.display = "block";
     }
 
-    // Clean title for filename
-    const safeTitle = (data.title || "video").replace(/[/\\?%*:|"<>]/g, '-').replace(/\s+/g, '_').trim();
+    // Super clean filename (no spaces, no bad chars, short)
+    const safeTitle = (data.title || "video")
+      .replace(/[^a-zA-Z0-9]/g, '_')  // only letters/numbers/underscore
+      .substring(0, 30);  // short to avoid issues
 
-    // VIDEO formats (has_video === true)
+    // VIDEO
     const videos = formats.filter(f => f.has_video === true);
     document.getElementById("videoList").innerHTML = videos.length
       ? videos.map(v => {
-          const quality = v.quality || "Unknown";
-          const codec = v.type ? `${v.type}` : "";
+          const q = v.quality || "Unknown";
+          const codec = v.type ? v.type : "";
           const fps = v.fps ? `${v.fps}fps` : "";
-          const bitrate = v.bitrate ? `${v.bitrate} kbps` : "";
-          const label = `${quality} ${codec} ${fps} ${bitrate}`.trim();
-          const ext = v.mime?.includes("webm") ? "webm" : "mp4";
-          const filename = `\( {safeTitle}_ \){quality}p.${ext}`;
+          const br = v.bitrate ? `${v.bitrate}kbps` : "";
+          const label = `${q} ${codec} ${fps} ${br}`.trim();
+
+          const mime = v.mime || v.mime_type || "";
+          const ext = mime.includes("webm") ? "webm" : "mp4";
+          const filename = `\( {safeTitle}_ \){q}p.${ext}`;
 
           return `<a class="download-btn" href="\( {v.url}" download=" \){filename}" target="_blank">
                     ${label}
@@ -253,13 +259,15 @@ async function fetchVideo() {
         }).join("")
       : "<p>No video formats</p>";
 
-    // AUDIO formats (has_video !== true)
+    // AUDIO
     const audios = formats.filter(f => f.has_video !== true);
     document.getElementById("audioList").innerHTML = audios.length
       ? audios.map(a => {
-          const bitrate = a.bitrate ? `${a.bitrate} kbps` : "";
-          const label = `Audio ${bitrate}`.trim();
-          const ext = a.mime?.includes("webm") ? "webm" : "m4a";
+          const br = a.bitrate ? `${a.bitrate}kbps` : "";
+          const label = `Audio ${br}`.trim();
+
+          const mime = a.mime || a.mime_type || "";
+          const ext = mime.includes("webm") ? "webm" : "m4a";
           const filename = `\( {safeTitle}_audio. \){ext}`;
 
           return `<a class="download-btn" href="\( {a.url}" download=" \){filename}" target="_blank">
@@ -269,7 +277,7 @@ async function fetchVideo() {
       : "<p>No audio formats</p>";
 
   } catch (e) {
-    document.getElementById("title").innerText = "Error – Check link or internet";
+    document.getElementById("title").innerText = "Error – Check internet or link";
     console.error(e);
   }
 }
