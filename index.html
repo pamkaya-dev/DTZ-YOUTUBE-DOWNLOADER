@@ -1,167 +1,363 @@
 <!DOCTYPE html>
-<html lang="si">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>DTZ YT Downloader</title>
+<title>YouTube Downloader</title>
+
+<!-- Font -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+
 <style>
-  /* Global Styles */
-  * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', Arial, sans-serif; }
-  body { background:#050505; min-height:100vh; display:flex; justify-content:center; align-items:center; color:#e5e7eb; position:relative;  }
-  
-  /* Bubble Background */
-  .bubble { position:absolute; bottom:0; border-radius:50%; background:#ff0000; opacity:0.6; animation:floatUp linear forwards; }
-  @keyframes floatUp { 0% { transform: translateY(0) scale(0.5); opacity:0.3; } 50% { opacity:0.8; } 100% { transform: translateY(-150vh) scale(1); opacity:0; } }
-  
-  /* Notice Bar */
-  #notice { position:fixed; top:0; left:0; width:100%; background:#1a0000; padding:12px; text-align:center; z-index:0; color:#ffaaaa; font-weight:bold; }
-  #notice::before, #notice::after { content:""; position:absolute; inset:-3px; border-radius:8px; background:conic-gradient(from var(--angle), #ff0000, #000, #ff0000); z-index:-1; animation:spin 4s linear infinite; }
-  #notice::before { filter:blur(1rem); opacity:0.7; }
-  @keyframes spin { to { --angle:360deg; } }
-  @property --angle { syntax:"<angle>"; initial-value:0deg; inherits:false; }
+/* ===== Global ===== */
+* {
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Poppins', Arial, sans-serif;
+}
 
-  /* Loading Overlay */
-  #loadingOverlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); display:none; justify-content:center; align-items:center; flex-direction:column; z-index:999; }
-  .spinner { width:60px; height:60px; border:6px solid #333; border-top:6px solid #ff0000; border-radius:50%; animation:spinLoader 1s linear infinite; margin-bottom:20px; }
-  @keyframes spinLoader { to { transform:rotate(360deg); } }
+body {
+  background:#050505;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:#e5e7eb;
+  position:relative;
+}
+/* ===== Bubble Background ===== */
+.bubble {
+  position:absolute;
+  bottom:0;
+  border-radius:50%;
+  background:#ff0000;
+  opacity:0.6;
+  animation:floatUp linear forwards;
+}
 
-  /* Language Popup */
-  #langPopup { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:flex; justify-content:center; align-items:center; z-index:1001; flex-direction:column; }
-  #langPopup button { padding:15px 30px; margin:10px; background:#ff0000; color:#fff; border:none; border-radius:12px; font-size:18px; cursor:pointer; box-shadow:0 0 15px #ff0000; }
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) scale(0.5);
+    opacity:0.3;
+  }
+  50% {
+    opacity:0.8;
+  }
+  100% {
+    transform: translateY(-150vh) scale(1);
+    opacity:0;
+  }
+}
+/* ===== Container ===== */
+.container {
+  max-width:700px;
+  width:100%;
+  padding:20px;
+  text-align:center;
+  position:relative;
+  z-index:1;
+}
 
-  /* Container & Rest */
-  .container { max-width:700px; width:100%; padding:20px; text-align:center; position:relative; z-index:1; margin-top:60px; }
-  h1 { color:#ff2222; margin-bottom:20px; }
-  .box { width:340px; margin:20px auto; padding:26px; background:#0b0b0b; border-radius:18px; position:relative; overflow:hidden; }
-  .box::before, .box::after { content:""; position:absolute; inset:-3px; border-radius:20px; background:conic-gradient(from var(--angle), #ff0000, #000, #ff0000); z-index:-1; animation:spin 3.5s linear infinite; }
-  .box::before { filter:blur(1.4rem); opacity:.75; }
-  input { width:100%; padding:12px; border-radius:6px; border:none; margin-bottom:12px; font-size:16px; }
-  button { padding:12px 20px; background:#ff0000; border:none; border-radius:12px; font-weight:600; color:#fff; cursor:pointer; box-shadow:0 0 10px #ff0000; }
-  button:hover { background:#000; color:#ff0000; box-shadow:0 0 20px #ff0000; }
-  .download-btn { display:inline-block; padding:8px 14px; background:#ff0000; color:#fff; border-radius:6px; text-decoration:none; font-weight:bold; margin:5px; }
-  .download-btn:hover { background:#000; color:#ff0000; box-shadow:0 0 15px #ff0000; }
-  #thumbnail { display:none; max-width:480px; width:100%; height:auto; border-radius:12px; margin:20px auto; box-shadow:0 0 20px rgba(255,0,0,0.5); }
+/* ===== Heading ===== */
+h1 {
+  color:#ff2222;
+  margin-bottom:20px;
+}
+
+/* ===== Boxes (VIDEO / AUDIO) ===== */
+.box {
+  width:340px;
+  margin:20px auto;
+  padding:26px;
+  background:#0b0b0b;
+  border-radius:18px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+
+/* ===== Animated Border ===== */
+@property --angle {
+  syntax:"<angle>";
+  initial-value:0deg;
+  inherits:false;
+}
+
+.box::before,
+.box::after {
+  content:"";
+  position:absolute;
+  inset:-3px;
+  border-radius:20px;
+  background:conic-gradient(
+    from var(--angle),
+    #ff0000,
+    #000,
+    #ff0000
+  );
+  z-index:-1;
+  animation:spin 3.5s linear infinite;
+}
+
+.box::before {
+  filter:blur(1.4rem);
+  opacity:.75;
+}
+
+@keyframes spin {
+  to{--angle:360deg;}
+}
+
+/* ===== Titles inside boxes ===== */
+.box h2 {
+  color:#ff0000;
+  margin-bottom:12px;
+}
+
+/* ===== Input ===== */
+input {
+  width:100%;
+  padding:12px;
+  border-radius:6px;
+  border:none;
+  outline:none;
+  margin-bottom:12px;
+  font-size:16px;
+}
+
+/* ===== Button ===== */
+button {
+  padding:12px 20px;
+  background:#ff0000;
+  border:none;
+  border-radius:12px;
+  font-weight:600;
+  color:#fff;
+  cursor:pointer;
+  transition:.25s;
+  box-shadow:0 0 10px #ff0000;
+}
+
+button:hover {
+  background:#000;
+  color:#ff0000;
+  box-shadow:0 0 20px #ff0000, 0 0 40px #ff0000;
+}
+
+/* ===== Video & Audio List Styling ===== */
+#videoList, #audioList {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.download-btn {
+  display:inline-block;
+  padding:8px 14px;
+  background:#ff0000;
+  color:#fff;
+  border-radius:6px;
+  text-decoration:none;
+  font-weight:bold;
+  transition:.25s;
+}
+
+.download-btn:hover {
+  background:#000;
+  color:#ff0000;
+  box-shadow:0 0 15px #ff0000;
+}
+
+/* NEW: Notice Bar */
+#notice {
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  background:#1a0000;
+  padding:12px;
+  text-align:center;
+  z-index:100;
+  color:#ffaaaa;
+  font-weight:bold;
+}
+#notice::before {
+  content:"";
+  position:absolute;
+  inset:-3px;
+  border-radius:8px;
+  background:conic-gradient(from var(--angle), #ff0000, #000, #ff0000);
+  z-index:-1;
+  animation:spin 4s linear infinite;
+  filter:blur(8px);
+}
+
+/* NEW: Loading Overlay */
+#loadingOverlay {
+  position:fixed;
+  top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.9);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  z-index:99;
+  color:#fff;
+}
+.spinner {
+  width:60px;
+  height:60px;
+  border:6px solid #333;
+  border-top:6px solid #ff0000;
+  border-radius:50%;
+  animation:spinLoader 1s linear infinite;
+}
+@keyframes spinLoader { to { transform:rotate(360deg); } }
+
+/* NEW: Language Popup */
+#langPopup {
+  position:fixed;
+  top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.95);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  z-index:101;
+}
+#langPopup button {
+  padding:15px 40px;
+  margin:10px;
+  background:#ff0000;
+  color:#fff;
+  border:none;
+  border-radius:12px;
+  font-size:20px;
+  cursor:pointer;
+  box-shadow:0 0 15px #ff0000;
+}
 </style>
 </head>
 <body>
 
-<!-- Notice Bar -->
-<div id="notice" data-si="Download button එක click කළාම තව page එකකට redirect වෙයි. එතන ... (dots three) menu එක click කරලා download කරගන්න!" data-en="When you click the Download button, it redirects to another page. There, click the three dots menu to download!"></div>
+<!-- NEW: Notice Bar -->
+<div id="notice">Download button එක click කළාම තව page එකකට redirect වෙයි. එතන ⋮ (three dots) menu එක click කරලා download කරගන්න!</div>
 
-<!-- Loading Overlay -->
+<!-- NEW: Loading Overlay -->
 <div id="loadingOverlay">
   <div class="spinner"></div>
-  <p id="loadingText"></p>
+  <p id="loadingText">Loading...</p>
 </div>
 
-<!-- Language Selection Popup -->
+<!-- NEW: Language Popup -->
 <div id="langPopup">
-  <h2 style="color:#ff2222; margin-bottom:30px;">Select Language / භාෂාව තෝරන්න</h2>
-  <button onclick="setLanguage('si')">සිංහල</button>
-  <button onclick="setLanguage('en')">English</button>
+  <h2 style="color:#ff2222; margin-bottom:30px;">භාෂාව තෝරන්න / Select Language</h2>
+  <button onclick="setLang('si')">සිංහල</button>
+  <button onclick="setLang('en')">English</button>
 </div>
 
 <div class="container">
-  <h1 id="heading">🎬 DTZ YT DOWNLOADER</h1>
 
-  <input id="yturl" type="text" placeholder="Paste YouTube link here / YouTube link එක paste කරන්න">
+  <h1 id="mainTitle">🎬 DTZ YT DOWNLOADER</h1>
 
-  <button id="fetchBtn" onclick="fetchVideo()">Fetch Qualities / Qualities ගන්න</button>
+  <input
+    id="yturl"
+    type="text"
+    placeholder="Paste YouTube link here"
+  >
+
+  <button onclick="fetchVideo()">Fetch Qualities</button>
 
   <h3 id="title"></h3>
-  <img id="thumbnail" alt="Video Thumbnail">
+
+  <!-- Thumbnail Image -->
+  <img id="thumbnail" alt="Video Thumbnail" style="display:none; max-width:480px; width:100%; height:auto; border-radius:12px; margin:20px auto; box-shadow:0 0 20px rgba(255,0,0,0.5);">
 
   <div class="box">
-    <h2 id="videoTitle">📹 VIDEO</h2>
+    <h2 id="videoBoxTitle">📹 VIDEO</h2>
     <div id="videoList"></div>
   </div>
 
   <div class="box">
-    <h2 id="audioTitle">🎵 AUDIO</h2>
+    <h2 id="audioBoxTitle">🎵 AUDIO</h2>
     <div id="audioList"></div>
   </div>
+
 </div>
 
 <script>
-// Bubble creation
+// Bubbles
 function createBubble() {
   const bubble = document.createElement('div');
   bubble.classList.add('bubble');
+
   const size = Math.random() * 8 + 4;
   bubble.style.width = size + 'px';
   bubble.style.height = size + 'px';
+
   bubble.style.left = Math.random() * 100 + '%';
+
   bubble.style.animationDuration = (Math.random() * 2 + 2) + 's';
+
   document.body.appendChild(bubble);
-  setTimeout(() => bubble.remove(), 4000);
+
+  setTimeout(() => {
+    bubble.remove();
+  }, 4000);
 }
+
 setInterval(createBubble, 20);
 
-// Language System
-let currentLang = 'si';
-
-const translations = {
-  si: {
-    heading: "🎬 DTZ YT DOWNLOADER",
-    placeholder: "YouTube link එක paste කරන්න",
-    fetchBtn: "Qualities ගන්න",
-    videoTitle: "📹 VIDEO",
-    audioTitle: "🎵 AUDIO",
-    loading: "Loading... / ලෝඩ් වෙමින්...",
-    noVideo: "Video formats නැහැ",
-    noAudio: "Audio formats නැහැ",
-    unknown: "Unknown Title / නොදන්නා Title"
-  },
+// NEW: Language System
+let lang = 'en';
+const texts = {
   en: {
-    heading: "🎬 DTZ YT DOWNLOADER",
+    mainTitle: "🎬 DTZ YT DOWNLOADER",
     placeholder: "Paste YouTube link here",
     fetchBtn: "Fetch Qualities",
-    videoTitle: "📹 VIDEO",
-    audioTitle: "🎵 AUDIO",
+    videoBox: "📹 VIDEO",
+    audioBox: "🎵 AUDIO",
     loading: "Loading...",
-    noVideo: "No video formats available",
-    noAudio: "No audio formats available",
-    unknown: "Unknown Title"
+    notice: "When you click Download button, it redirects to another page. Click the ⋮ (three dots) menu there to download!"
+  },
+  si: {
+    mainTitle: "🎬 DTZ YT DOWNLOADER",
+    placeholder: "YouTube link එක paste කරන්න",
+    fetchBtn: "Qualities ගන්න",
+    videoBox: "📹 VIDEO",
+    audioBox: "🎵 AUDIO",
+    loading: "ලෝඩ් වෙමින්...",
+    notice: "Download button එක click කළාම තව page එකකට redirect වෙයි. එතන ⋮ (three dots) menu එක click කරලා download කරගන්න!"
   }
 };
 
-function setLanguage(lang) {
-  currentLang = lang;
+function setLang(l) {
+  lang = l;
   document.getElementById('langPopup').style.display = 'none';
-  document.documentElement.lang = lang;
-  applyTranslations();
-  updateNotice();
+  
+  document.getElementById('mainTitle').innerText = texts[l].mainTitle;
+  document.getElementById('yturl').placeholder = texts[l].placeholder;
+  document.querySelector('button').innerText = texts[l].fetchBtn;
+  document.getElementById('videoBoxTitle').innerText = texts[l].videoBox;
+  document.getElementById('audioBoxTitle').innerText = texts[l].audioBox;
+  document.getElementById('notice').innerText = texts[l].notice;
+  document.getElementById('loadingText').innerText = texts[l].loading;
 }
 
-function applyTranslations() {
-  const t = translations[currentLang];
-  document.getElementById('heading').innerText = t.heading;
-  document.getElementById('yturl').placeholder = t.placeholder;
-  document.getElementById('fetchBtn').innerText = t.fetchBtn;
-  document.getElementById('videoTitle').innerText = t.videoTitle;
-  document.getElementById('audioTitle').innerText = t.audioTitle;
-}
-
-function updateNotice() {
-  document.getElementById('notice').innerText = document.getElementById('notice').getAttribute(`data-${currentLang}`);
-}
-
-// Loading functions
+// NEW: Loading functions
 function showLoading() {
   document.getElementById('loadingOverlay').style.display = 'flex';
-  document.getElementById('loadingText').innerText = translations[currentLang].loading;
 }
 function hideLoading() {
   document.getElementById('loadingOverlay').style.display = 'none';
 }
 
-// Fetch Video
 async function fetchVideo() {
   const yt = document.getElementById("yturl").value.trim();
-  if (!yt) return alert(currentLang === 'si' ? "Link එක paste කරන්න" : "Paste YouTube link");
+  if (!yt) return alert(lang === 'si' ? "Link එක paste කරන්න" : "Paste YouTube link");
 
   showLoading();
-  document.getElementById("title").innerText = translations[currentLang].loading;
+  document.getElementById("title").innerText = texts[lang].loading;
   document.getElementById("thumbnail").style.display = "none";
   document.getElementById("videoList").innerHTML = "";
   document.getElementById("audioList").innerHTML = "";
@@ -173,7 +369,7 @@ async function fetchVideo() {
     const json = await res.json();
 
     if (!json.status || !json.BK9) {
-      document.getElementById("title").innerText = currentLang === 'si' ? "Data ගන්න බැරිවුණා" : "Failed to fetch data";
+      document.getElementById("title").innerText = lang === 'si' ? "Data ගන්න බැරිවුණා" : "Failed to fetch data";
       hideLoading();
       return;
     }
@@ -181,7 +377,7 @@ async function fetchVideo() {
     const data = json.BK9;
     const formats = data.formats || [];
 
-    document.getElementById("title").innerText = data.title || translations[currentLang].unknown;
+    document.getElementById("title").innerText = data.title || (lang === 'si' ? "නොදන්නා Title" : "Unknown Title");
 
     // Thumbnail
     const thumbImg = document.getElementById("thumbnail");
@@ -189,36 +385,38 @@ async function fetchVideo() {
     if (thumbUrl) {
       thumbUrl = thumbUrl.split("?")[0].replace("default.jpg", "hqdefault.jpg");
       thumbImg.src = thumbUrl;
+      thumbImg.alt = "Thumbnail for " + (data.title || "video");
       thumbImg.style.display = "block";
+    } else {
+      thumbImg.style.display = "none";
     }
 
-    // Video formats
+    // VIDEO formats
     const videos = formats.filter(f => f.type === "video");
     document.getElementById("videoList").innerHTML = videos.length
-      ? videos.map(v => `<a class="download-btn" href="\( {v.url}" target="_blank"> \){v.quality || "Unknown"} ${v.fps ? `| ${v.fps}fps` : ""} ${v.bitrate ? `| ${v.bitrate}` : ""}</a>`).join("")
-      : `<p>${translations[currentLang].noVideo}</p>`;
+      ? videos.map(v => `
+          <a class="download-btn" href="${v.url}" target="_blank">
+            ${v.quality || "Unknown"} ${v.fps ? `| ${v.fps}fps` : ""} ${v.bitrate ? `| ${v.bitrate}` : ""}
+          </a>
+        `).join("")
+      : "<p>" + (lang === 'si' ? "Video formats නැහැ" : "No video formats available") + "</p>";
 
-    // Audio formats
+    // AUDIO formats
     const audios = formats.filter(f => f.type !== "video");
     document.getElementById("audioList").innerHTML = audios.length
-      ? audios.map(a => `<a class="download-btn" href="${a.url}" target="_blank">Audio ${a.quality ? `| ${a.quality}` : ""} ${a.bitrate ? `| ${a.bitrate}` : ""}</a>`).join("")
-      : `<p>${translations[currentLang].noAudio}</p>`;
+      ? audios.map(a => `
+          <a class="download-btn" href="${a.url}" target="_blank">
+            Audio ${a.quality ? `| ${a.quality}` : ""} ${a.bitrate ? `| ${a.bitrate}` : ""}
+          </a>
+        `).join("")
+      : "<p>" + (lang === 'si' ? "Audio formats නැහැ" : "No audio formats available") + "</p>";
 
   } catch (e) {
-    document.getElementById("title").innerText = currentLang === 'si' ? "Error එකක් ආවා" : "Error fetching data";
+    document.getElementById("title").innerText = lang === 'si' ? "Error එකක් ආවා" : "Error fetching data";
     console.error(e);
   }
   hideLoading();
 }
-
-// Optional: Download button click කළාම ad page එකකට redirect කරන්න ඕන නම් මේ code uncomment කරන්න
-// document.querySelectorAll('.download-btn').forEach(btn => {
-//   btn.addEventListener('click', (e) => {
-//     e.preventDefault();
-//     window.open('https://your-ad-page.com', '_blank'); // ad page URL දාන්න
-//     setTimeout(() => window.location.href = btn.href, 5000); // 5 seconds එකෙන් original link එකට යයි
-//   });
-// });
 </script>
 </body>
 </html>
