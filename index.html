@@ -169,27 +169,39 @@ button:hover {
 }
 
 /* NEW: Notice Bar */
-#notice {
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  background:#1a0000;
-  padding:12px;
-  text-align:center;
-  z-index:-1;
-  color:#ffaaaa;
-  font-weight:bold;
+/* ===== Animated Border ===== */
+@property --angle {
+syntax:"<angle>";
+initial-value:0deg;
+inherits:false;
 }
+
+#notice::before,
+#notice::after {
+content: "";
+position: absolute;
+inset: -3px;
+border-radius: 20px;
+background: conic-gradient(
+from var(--angle),
+transparent 65%,
+#00f2ff,
+#00bcd4,
+#00f2ff
+);
+z-index: -1;
+animation: spin 3.5s linear infinite;
+}
+
 #notice::before {
-  content:"";
-  position:absolute;
-  inset:-3px;
-  border-radius:8px;
-  background:conic-gradient(from var(--angle), #ff0000, #000, #ff0000);
-  z-index:-1;
-  animation:spin 4s linear infinite;
-  filter:blur(8px);
+filter: blur(1.4rem);
+opacity: .75;
+}
+
+@keyframes spin {
+to {
+--angle: 360deg;
+}
 }
 
 /* NEW: Loading Overlay */
