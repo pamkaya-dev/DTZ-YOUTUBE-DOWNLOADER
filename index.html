@@ -24,11 +24,13 @@ body {
   align-items:center;
   color:#e5e7eb;
   position:relative;
+  overflow:hidden; /* bubbles එළියට යන්න ඉඩ නැති කරනවා */
 }
+
 /* ===== Bubble Background ===== */
 .bubble {
   position:absolute;
-  bottom:0;
+  bottom:-10px;
   border-radius:50%;
   background:#ff0000;
   opacity:0.6;
@@ -48,6 +50,7 @@ body {
     opacity:0;
   }
 }
+
 /* ===== Container ===== */
 .container {
   max-width:700px;
@@ -55,16 +58,17 @@ body {
   padding:20px;
   text-align:center;
   position:relative;
-  z-index:1;
+  z-index:10; /* bubbles ඉහළින් */
 }
 
 /* ===== Heading ===== */
 h1 {
   color:#ff2222;
   margin-bottom:20px;
+  font-size:2.2rem;
 }
 
-/* ===== Boxes (VIDEO / AUDIO) ===== */
+/* ===== Boxes ===== */
 .box {
   width:340px;
   margin:20px auto;
@@ -89,12 +93,7 @@ h1 {
   position:absolute;
   inset:-3px;
   border-radius:20px;
-  background:conic-gradient(
-    from var(--angle),
-    #ff0000,
-    #000,
-    #ff0000
-  );
+  background:conic-gradient(from var(--angle), #ff0000, #000, #ff0000);
   z-index:-1;
   animation:spin 3.5s linear infinite;
 }
@@ -108,13 +107,13 @@ h1 {
   to{--angle:360deg;}
 }
 
-/* ===== Titles inside boxes ===== */
+/* ===== Titles ===== */
 .box h2 {
   color:#ff0000;
   margin-bottom:12px;
 }
 
-/* ===== Input ===== */
+/* ===== Input & Button ===== */
 input {
   width:100%;
   padding:12px;
@@ -123,11 +122,12 @@ input {
   outline:none;
   margin-bottom:12px;
   font-size:16px;
+  background:#111;
+  color:#fff;
 }
 
-/* ===== Button ===== */
 button {
-  padding:12px 20px;
+  padding:12px 30px;
   background:#ff0000;
   border:none;
   border-radius:12px;
@@ -144,7 +144,7 @@ button:hover {
   box-shadow:0 0 20px #ff0000, 0 0 40px #ff0000;
 }
 
-/* ===== Video & Audio List Styling ===== */
+/* ===== Lists ===== */
 #videoList, #audioList {
   display:flex;
   flex-direction:column;
@@ -153,7 +153,7 @@ button:hover {
 
 .download-btn {
   display:inline-block;
-  padding:8px 14px;
+  padding:10px 16px;
   background:#ff0000;
   color:#fff;
   border-radius:6px;
@@ -167,26 +167,32 @@ button:hover {
   color:#ff0000;
   box-shadow:0 0 15px #ff0000;
 }
+
+/* ===== Thumbnail ===== */
+#thumbnail {
+  max-width:480px;
+  width:100%;
+  height:auto;
+  border-radius:12px;
+  margin:20px auto;
+  box-shadow:0 0 20px rgba(255,0,0,0.5);
+  display:none;
+}
 </style>
 </head>
 <body>
 
+<!-- Bubbles directly on body -->
 <div class="container">
-
   <h1>🎬 DTZ YT DOWNLOADER</h1>
 
-  <input
-    id="yturl"
-    type="text"
-    placeholder="Paste YouTube link here"
-  >
+  <input id="yturl" type="text" placeholder="Paste YouTube link here">
 
   <button onclick="fetchVideo()">Fetch Qualities</button>
 
-  <h3 id="title"></h3>
+  <h3 id="title" style="margin-top:20px; min-height:30px;"></h3>
 
-  <!-- Thumbnail Image -->
-  <img id="thumbnail" alt="Video Thumbnail" style="display:none; max-width:480px; width:100%; height:auto; border-radius:12px; margin:20px auto; box-shadow:0 0 20px rgba(255,0,0,0.5);">
+  <img id="thumbnail" alt="Video Thumbnail">
 
   <div class="box">
     <h2>📹 VIDEO</h2>
@@ -197,40 +203,57 @@ button:hover {
     <h2>🎵 AUDIO</h2>
     <div id="audioList"></div>
   </div>
-
 </div>
 
 <script>
-// Bubbles directly appended to body (fixed missing div issue)
-<script>
-// Bubbles code same තියෙන්න...
+// Create bubbles
+function createBubble() {
+  const bubble = document.createElement('div');
+  bubble.classList.add('bubble');
 
+  const size = Math.random() * 8 + 4;
+  bubble.style.width = size + 'px';
+  bubble.style.height = size + 'px';
+  bubble.style.left = Math.random() * 100 + '%';
+  bubble.style.animationDuration = (Math.random() * 3 + 3) + 's'; // 3-6s
+
+  document.body.appendChild(bubble);
+
+  setTimeout(() => {
+    if (bubble.parentNode) bubble.remove();
+  }, 7000);
+}
+
+setInterval(createBubble, 50); // dense but smooth
+
+// Manual download function
 async function downloadFile(url, filename) {
   try {
     const response = await fetch(url);
-    if (!response.ok) throw new Error("Download failed");
-    
+    if (!response.ok) throw new Error("Failed");
+
     const blob = await response.blob();
     const blobUrl = window.URL.createObjectURL(blob);
-    
+
     const a = document.createElement('a');
-    a.style.display = 'none';
     a.href = blobUrl;
-    a.download = filename;  // මෙතන filename එක force කරනවා
+    a.download = filename;
+    a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
-    
-    window.URL.revokeObjectURL(blobUrl);
+
     document.body.removeChild(a);
+    window.URL.revokeObjectURL(blobUrl);
   } catch (e) {
-    alert("Download failed! Opening in new tab instead.");
-    window.open(url, '_blank'); // fallback
+    alert("Download failed! Opening in new tab...");
+    window.open(url, '_blank');
   }
 }
 
+// Main function
 async function fetchVideo() {
   const yt = document.getElementById("yturl").value.trim();
-  if (!yt) return alert("Paste YouTube link");
+  if (!yt) return alert("Paste a YouTube link!");
 
   document.getElementById("title").innerText = "Loading...";
   document.getElementById("thumbnail").style.display = "none";
@@ -244,7 +267,7 @@ async function fetchVideo() {
     const json = await res.json();
 
     if (!json.status || !json.BK9) {
-      document.getElementById("title").innerText = "Failed to fetch data";
+      document.getElementById("title").innerText = "API Error or Invalid Link";
       return;
     }
 
@@ -253,59 +276,51 @@ async function fetchVideo() {
 
     document.getElementById("title").innerText = data.title || "Unknown Title";
 
-    // Thumbnail same තියෙන්න...
-
+    // Thumbnail
     const thumbImg = document.getElementById("thumbnail");
-    let thumbUrl = data.thumbnail || "";
-    if (thumbUrl) {
-      thumbUrl = thumbUrl.split("?")[0].replace("default.jpg", "hqdefault.jpg");
+    if (data.thumbnail) {
+      let thumbUrl = data.thumbnail.split("?")[0].replace("default.jpg", "hqdefault.jpg");
       thumbImg.src = thumbUrl;
-      thumbImg.alt = "Thumbnail for " + (data.title || "video");
       thumbImg.style.display = "block";
     }
 
     // VIDEO
-    const videos = formats.filter(f => f.type === "video");
+    const videos = formats.filter(f => f.type === "video" || f.has_video === true);
     document.getElementById("videoList").innerHTML = videos.length
       ? videos.map(v => {
-          const qualityLabel = v.quality || "Unknown";
-          const fps = v.fps ? `${v.fps}fps` : "";
-          const bitrate = v.bitrate ? `| ${v.bitrate}` : "";
+          const q = v.quality || "Unknown";
+          const fps = v.fps ? `| ${v.fps}fps` : "";
+          const br = v.bitrate ? `| ${v.bitrate}` : "";
           const ext = v.mime?.includes("webm") ? "webm" : "mp4";
-          const filename = `${data.title || "video"} - ${qualityLabel} ${fps} \( {bitrate}. \){ext}`.replace(/[/\\?%*:|"<>]/g, '-').trim();
+          const safeTitle = (data.title || "video").replace(/[/\\?%*:|"<>]/g, '-');
+          const filename = `${safeTitle} - \( {q} \){fps}\( {br}. \){ext}`;
 
-          return `
-            <a class="download-btn" href="javascript:void(0)" 
-               onclick="downloadFile('\( {v.url}', ' \){filename}')">
-              ${qualityLabel} ${fps} ${bitrate}
-            </a>
-          `;
+          return `<a class="download-btn" href="javascript:void(0)" onclick="downloadFile('\( {v.url}', ' \){filename}')">
+                    ${q} ${fps} ${br}
+                  </a>`;
         }).join("")
-      : "<p>No video formats available</p>";
+      : "<p>No video formats</p>";
 
     // AUDIO
-    const audios = formats.filter(f => f.type !== "video");
+    const audios = formats.filter(f => f.type !== "video" && f.has_video !== true);
     document.getElementById("audioList").innerHTML = audios.length
       ? audios.map(a => {
-          const bitrate = a.bitrate ? `| ${a.bitrate}` : "";
+          const br = a.bitrate ? `| ${a.bitrate}` : "";
           const ext = a.mime?.includes("webm") ? "webm" : "m4a";
-          const filename = `${data.title || "audio"} - Audio \( {bitrate}. \){ext}`.replace(/[/\\?%*:|"<>]/g, '-').trim();
+          const safeTitle = (data.title || "audio").replace(/[/\\?%*:|"<>]/g, '-');
+          const filename = `\( {safeTitle} - Audio \){br}.${ext}`;
 
-          return `
-            <a class="download-btn" href="javascript:void(0)" 
-               onclick="downloadFile('\( {a.url}', ' \){filename}')">
-              Audio ${bitrate}
-            </a>
-          `;
+          return `<a class="download-btn" href="javascript:void(0)" onclick="downloadFile('\( {a.url}', ' \){filename}')">
+                    Audio ${br}
+                  </a>`;
         }).join("")
-      : "<p>No audio formats available</p>";
+      : "<p>No audio formats</p>";
 
   } catch (e) {
-    document.getElementById("title").innerText = "Error fetching data";
+    document.getElementById("title").innerText = "Error – Check console (F12)";
     console.error(e);
   }
 }
-</script>
 </script>
 </body>
 </html>
