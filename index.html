@@ -173,19 +173,26 @@ button:hover {
 @property --angle {
 syntax:"<angle>";
 initial-value:0deg;
-inherits:false;
+inherits:true;
 }
 #notice {
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  background:#1a0000;
-  padding:12px;
-  text-align:center;
-  z-index:-1;
-  color:#ffaaaa;
-  font-weight:bold;
+  margin: 18px auto;
+  width: 100%;
+  max-width: 480px;
+  font-size: 14px;
+  text-align: center;
+  line-height: 1.4;
+  padding: 16px;
+  text-align: center;
+  color: #ffaaaa;
+  font-weight: bold;
+  background: #0b0b0b;
+  border-radius: 18px;
+  position: relative;
+}
+#notice {
+  border-top: 1px solid rgba(255,0,01,0.3);
+  padding-top: 1px;
 }
 #notice::before,
 #notice::after {
@@ -197,8 +204,8 @@ background: conic-gradient(
 from var(--angle),
 transparent 65%,
 #ff0000,
-#ff0000,
-#ff0000
+#ff0001,
+#ff0011
 );
 z-index: -1;
 animation: spin 3.5s linear infinite;
@@ -214,6 +221,7 @@ to {
 --angle: 360deg;
 }
 }
+
 
 /* NEW: Loading Overlay */
 #loadingOverlay {
@@ -263,9 +271,6 @@ to {
 </head>
 <body>
 
-<!-- NEW: Notice Bar -->
-<div id="notice">Download button එක click කළාම තව page එකකට redirect වෙයි. එතන ⋮ (three dots) menu එක click කරලා download කරගන්න!</div>
-
 <!-- NEW: Loading Overlay -->
 <div id="loadingOverlay">
   <div class="spinner"></div>
@@ -289,12 +294,20 @@ to {
     placeholder="Paste YouTube link here"
   >
 
-  <button onclick="fetchVideo()">Fetch Qualities</button>
+  <button onclick="fetchVideo()">DOWNLOAD</button>
+
+<!-- Notice under download button -->
+<div id="notice">
+  Download button එක click කළාම තව page එකකට redirect වෙයි.
+  එතන ⋮ (three dots) menu එක click කරලා download කරගන්න!
+</div>
 
   <h3 id="title"></h3>
 
   <!-- Thumbnail Image -->
   <img id="thumbnail" alt="Video Thumbnail" style="display:none; max-width:480px; width:100%; height:auto; border-radius:12px; margin:20px auto; box-shadow:0 0 20px rgba(255,0,0,0.5);">
+
+ <div id="resultArea" style="display:none;">
 
   <div class="box">
     <h2 id="videoBoxTitle">📹 VIDEO</h2>
@@ -379,6 +392,9 @@ async function fetchVideo() {
   const yt = document.getElementById("yturl").value.trim();
   if (!yt) return alert(lang === 'si' ? "Link එක paste කරන්න" : "Paste YouTube link");
 
+  // ✅ ADD: hide results on new click
+  document.getElementById("resultArea").style.display = "none";
+
   showLoading();
   document.getElementById("title").innerText = texts[lang].loading;
   document.getElementById("thumbnail").style.display = "none";
@@ -400,7 +416,8 @@ async function fetchVideo() {
     const data = json.BK9;
     const formats = data.formats || [];
 
-    document.getElementById("title").innerText = data.title || (lang === 'si' ? "නොදන්නා Title" : "Unknown Title");
+    document.getElementById("title").innerText =
+      data.title || (lang === 'si' ? "නොදන්නා Title" : "Unknown Title");
 
     // Thumbnail
     const thumbImg = document.getElementById("thumbnail");
@@ -419,7 +436,9 @@ async function fetchVideo() {
     document.getElementById("videoList").innerHTML = videos.length
       ? videos.map(v => `
           <a class="download-btn" href="${v.url}" target="_blank">
-            ${v.quality || "Unknown"} ${v.fps ? `| ${v.fps}fps` : ""} ${v.bitrate ? `| ${v.bitrate}` : ""}
+            ${v.quality || "Unknown"}
+            ${v.fps ? `| ${v.fps}fps` : ""}
+            ${v.bitrate ? `| ${v.bitrate}` : ""}
           </a>
         `).join("")
       : "<p>" + (lang === 'si' ? "Video formats නැහැ" : "No video formats available") + "</p>";
@@ -429,15 +448,25 @@ async function fetchVideo() {
     document.getElementById("audioList").innerHTML = audios.length
       ? audios.map(a => `
           <a class="download-btn" href="${a.url}" target="_blank">
-            Audio ${a.quality ? `| ${a.quality}` : ""} ${a.bitrate ? `| ${a.bitrate}` : ""}
+            Audio
+            ${a.quality ? `| ${a.quality}` : ""}
+            ${a.bitrate ? `| ${a.bitrate}` : ""}
           </a>
         `).join("")
       : "<p>" + (lang === 'si' ? "Audio formats නැහැ" : "No audio formats available") + "</p>";
 
+    // ✅ ADD: show results AFTER success
+    document.getElementById("resultArea").style.display = "block";
+
   } catch (e) {
-    document.getElementById("title").innerText = lang === 'si' ? "Error එකක් ආවා" : "Error fetching data";
+    document.getElementById("title").innerText =
+      lang === 'si' ? "Error එකක් ආවා" : "Error fetching data";
     console.error(e);
+
+    // ✅ ADD: hide results on error
+    document.getElementById("resultArea").style.display = "none";
   }
+
   hideLoading();
 }
 </script>
