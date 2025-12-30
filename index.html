@@ -378,7 +378,7 @@ function setLang(l) {
   document.getElementById('notice').innerText = texts[l].notice;
   document.getElementById('loadingText').innerText = texts[l].loading;
 }
-const t = "https://api";
+
 // NEW: Loading functions
 function showLoading() {
   document.getElementById('loadingOverlay').style.display = 'flex';
@@ -399,13 +399,14 @@ async function fetchVideo() {
   document.getElementById("thumbnail").style.display = "none";
   document.getElementById("videoList").innerHTML = "";
   document.getElementById("audioList").innerHTML = "";
+  const t = "https://api";
+  const h = "bk"; 
   const a = "you";
-  const a = "de";
+  const n = "de";
   const k = "?";
   const r = "dow";
-  const h = "bk"; 
-  const a = "=";
-  const API = `${t}.${h}9.${a}v/${r}nload/${a}tube${k}url${a}${encodeURIComponent(yt)}`;
+  const v = "=";
+  const API = `${t}.${h}9.${n}v/${r}nload/${a}tube${k}url${v}${encodeURIComponent(yt)}`;
 
   try {
     const res = await fetch(API);
