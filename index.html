@@ -345,7 +345,6 @@ function createBubble() {
 setInterval(createBubble, 20);
 
 // NEW: Language System
-  const a = "you";
 let lang = 'en';
 const texts = {
   en: {
@@ -387,9 +386,7 @@ function showLoading() {
 function hideLoading() {
   document.getElementById('loadingOverlay').style.display = 'none';
 }
-const a = "de";
-  const k = "?";
-  const r = "dow";
+
 async function fetchVideo() {
   const yt = document.getElementById("yturl").value.trim();
   if (!yt) return alert(lang === 'si' ? "Link එක paste කරන්න" : "Paste YouTube link");
@@ -402,7 +399,10 @@ async function fetchVideo() {
   document.getElementById("thumbnail").style.display = "none";
   document.getElementById("videoList").innerHTML = "";
   document.getElementById("audioList").innerHTML = "";
-  
+  const a = "you";
+  const a = "de";
+  const k = "?";
+  const r = "dow";
   const h = "bk"; 
   const a = "=";
   const API = `${t}.${h}9.${a}v/${r}nload/${a}tube${k}url${a}${encodeURIComponent(yt)}`;
